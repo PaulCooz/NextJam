@@ -1,6 +1,6 @@
-<Node width="100%" height="100%" color="#8fa0bf">
+<Node width="100%" height="100%">
     <Node flex-grow="0.7" padding="10" gap="10" flex-direction="row">
-        <Node flex-grow="0.6" color="#fcb08c" />
+        <Node flex-grow="0.6" color="#fcb08c" name="grid"> </Node>
         <Node flex-grow="0.4" color="#fcb08c" />
     </Node>
     <Node flex-grow="0.3" padding="10">

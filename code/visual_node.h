@@ -10,14 +10,17 @@
 class VisualNode {
 private:
   YGNodeRef node;
-  Color color;
+  std::string name;
 
 public:
+  Color color;
+
   VisualNode() {
     node = YGNodeNew();
     YGNodeSetContext(node, this);
 
     color.r = color.g = color.b = color.a = 0;
+    name = "";
   }
 
   ~VisualNode() {
@@ -48,7 +51,7 @@ public:
     auto visual = (VisualNode*)YGNodeGetContext(root);
     DrawRectangle(left, top, width, height, visual->color);
 
-    for (auto i = 0; i < YGNodeGetChildCount(root); i++) {
+    for (size_t i = 0; i < YGNodeGetChildCount(root); i++) {
       auto child = YGNodeGetChild(root, i);
       RenderTreeFrom(child);
     }
@@ -57,6 +60,21 @@ public:
   void RenderTree(float width, float height) {
     YGNodeCalculateLayout(node, width, height, YGDirectionLTR);
     RenderTreeFrom(node);
+  }
+
+  VisualNode* FindByName(const std::string& n) {
+    if (name == n)
+      return this;
+
+    for (size_t i = 0; i < YGNodeGetChildCount(node); i++) {
+      auto child = YGNodeGetChild(node, i);
+      auto context = (VisualNode*)YGNodeGetContext(child);
+      auto subFind = context->FindByName(n);
+      if (subFind != nullptr)
+        return subFind;
+    }
+
+    return nullptr;
   }
 
   static void InsertTree(YGNodeRef root, pugi::xml_node xml_child) {
@@ -141,6 +159,8 @@ public:
         }
 
         YGNodeStyleSetFlexDirection(child->node, value);
+      } else if (name == "name") {
+        child->name = attribute.as_string();
       }
     }
 

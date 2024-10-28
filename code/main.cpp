@@ -16,6 +16,8 @@ int main() {
     {
       ClearBackground(ClrBack);
 
+      auto gridNode = tree->FindByName("grid");
+      gridNode->color.r = (unsigned char)((gridNode->color.r + 1) % 256);
       tree->RenderTree(GetRenderWidth(), GetRenderHeight());
 
       Vector2 deltaMove;
