@@ -6,17 +6,17 @@
 
 int main() {
   SetTraceLogLevel(LOG_WARNING);
-  InitWindow(610, 987, "raylib [core] example - basic window");
+  InitWindow(610, 987, "Next Jam");
 
   SetTargetFPS(60);
 
+  auto tree = VisualNode::FromFile("res/ui.xml");
   while (!WindowShouldClose()) {
     BeginDrawing();
     {
       ClearBackground(ClrBack);
 
-      auto node = VisualNode::FromFile("res/ui.xml");
-      node->RenderTree(GetRenderWidth(), GetRenderHeight());
+      tree->RenderTree(GetRenderWidth(), GetRenderHeight());
 
       Vector2 deltaMove;
       deltaMove.x = deltaMove.y = 0;
@@ -41,6 +41,7 @@ int main() {
     }
     EndDrawing();
   }
+  delete tree;
 
   CloseWindow();
 

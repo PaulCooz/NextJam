@@ -21,7 +21,22 @@ public:
   }
 
   ~VisualNode() {
-    YGNodeFreeRecursive(node); // TODO context delete
+    const auto root = node;
+
+    size_t skipped = 0;
+    while (YGNodeGetChildCount(root) > skipped) {
+      const auto child = YGNodeGetChild(root, skipped);
+      auto weOwn = YGNodeGetOwner(child) == root;
+      if (weOwn) {
+        YGNodeRemoveChild(root, child);
+
+        auto context = (VisualNode*)YGNodeGetContext(child);
+        delete context;
+      } else {
+        skipped++;
+      }
+    }
+    YGNodeFree(root);
   }
 
   void RenderTreeFrom(YGNodeRef root) {
