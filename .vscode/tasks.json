@@ -3,35 +3,35 @@
 	"tasks": [
 		{
 			"type": "shell",
-			"label": "configure",
+			"label": "win configure",
 			"command": "cmake",
 			"args": [
 				"-S",
 				".",
 				"-B",
-				"./build",
+				"./build/win",
 				"-DCMAKE_BUILD_TYPE=Debug",
 				"-G",
 				"Ninja"
 			]
 		},
 		{
-			"label": "build",
+			"label": "win build",
 			"command": "cmake",
 			"args": [
 				"--build",
-				"./build"
+				"./build/win"
 			],
 			"dependsOn": [
-				"configure"
+				"win configure"
 			],
 			"group": "build"
 		},
 		{
-			"label": "build and run",
-			"command": "./build/NextJam.exe",
+			"label": "win build and run",
+			"command": "./build/win/NextJam.exe",
 			"dependsOn": [
-				"build"
+				"win build"
 			],
 			"group": "build"
 		},

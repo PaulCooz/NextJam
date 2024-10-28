@@ -1,7 +1,8 @@
-<Node width="200" height="250" padding="10" flex-wrap="wrap" gap="10" color="#55555F">
-    <Node width="50" height="50" color="#999F99" />
-    <Node width="50" height="50" color="#999F99" />
-    <Node width="50" height="50" color="#999F99" />
-    <Node width="50" height="50" color="#999F99" />
-    <Node width="50" height="50" color="#999F99" />
+<Node width="100%" height="100%" color="#8fa0bf">
+    <Node flex-grow="0.7" padding="10" gap="10" flex-direction="row">
+        <Node flex-grow="0.6" color="#fcb08c" />
+        <Node flex-grow="0.4" color="#fcb08c" />
+    </Node>
+    <Node flex-grow="0.3" padding="10">
+    </Node>
 </Node>

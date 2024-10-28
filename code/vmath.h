@@ -3,6 +3,7 @@
 #include "raylib.h"
 #include <algorithm>
 #include <math.h>
+#include <string>
 
 static Color HexToRgb(std::string str) {
   Color color;

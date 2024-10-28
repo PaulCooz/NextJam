@@ -17,17 +17,14 @@ public:
     node = YGNodeNew();
     YGNodeSetContext(node, this);
 
-    color.r = color.g = color.b = color.a = 255;
+    color.r = color.g = color.b = color.a = 0;
   }
 
   ~VisualNode() {
     YGNodeFreeRecursive(node); // TODO context delete
   }
 
-  void RenderTreeFrom(YGNodeRef root, int deep = 0) {
-    if (deep == 0)
-      YGNodeCalculateLayout(root, GetRenderWidth(), GetRenderHeight(), YGDirectionLTR);
-
+  void RenderTreeFrom(YGNodeRef root) {
     auto top = YGNodeLayoutGetTop(root);
     auto left = YGNodeLayoutGetLeft(root);
     auto width = YGNodeLayoutGetWidth(root);
@@ -38,11 +35,14 @@ public:
 
     for (auto i = 0; i < YGNodeGetChildCount(root); i++) {
       auto child = YGNodeGetChild(root, i);
-      RenderTreeFrom(child, deep + 1);
+      RenderTreeFrom(child);
     }
   }
 
-  void RenderTree() { RenderTreeFrom(node); }
+  void RenderTree(float width, float height) {
+    YGNodeCalculateLayout(node, width, height, YGDirectionLTR);
+    RenderTreeFrom(node);
+  }
 
   static void InsertTree(YGNodeRef root, pugi::xml_node xml_child) {
     auto child = new VisualNode();
@@ -52,9 +52,19 @@ public:
     for (auto attribute : xml_child.attributes()) {
       std::string name = attribute.name();
       if (name == "width") {
-        YGNodeStyleSetWidth(child->node, attribute.as_float());
+        std::string value = attribute.as_string();
+        if (value.back() == '%') {
+          YGNodeStyleSetWidthPercent(child->node, std::stoi(value.substr(0, value.size() - 1)));
+        } else {
+          YGNodeStyleSetWidth(child->node, attribute.as_float());
+        }
       } else if (name == "height") {
-        YGNodeStyleSetHeight(child->node, attribute.as_float());
+        std::string value = attribute.as_string();
+        if (value.back() == '%') {
+          YGNodeStyleSetHeightPercent(child->node, std::stoi(value.substr(0, value.size() - 1)));
+        } else {
+          YGNodeStyleSetHeight(child->node, attribute.as_float());
+        }
       } else if (name == "padding") {
         YGNodeStyleSetPadding(child->node, YGEdgeAll, attribute.as_float());
       } else if (name == "margin") {
@@ -101,6 +111,21 @@ public:
         }
 
         YGNodeStyleSetFlexWrap(child->node, value);
+      } else if (name == "flex-direction") {
+        std::string dir = attribute.as_string();
+        YGFlexDirection value;
+
+        if (dir == "column") {
+          value = YGFlexDirectionColumn;
+        } else if (dir == "column-reverse") {
+          value = YGFlexDirectionColumnReverse;
+        } else if (dir == "row") {
+          value = YGFlexDirectionRow;
+        } else if (dir == "row-reverse") {
+          value = YGFlexDirectionRowReverse;
+        }
+
+        YGNodeStyleSetFlexDirection(child->node, value);
       }
     }
 

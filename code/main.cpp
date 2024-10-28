@@ -16,7 +16,7 @@ int main() {
       ClearBackground(ClrBack);
 
       auto node = VisualNode::FromFile("res/ui.xml");
-      node->RenderTree();
+      node->RenderTree(GetRenderWidth(), GetRenderHeight());
 
       Vector2 deltaMove;
       deltaMove.x = deltaMove.y = 0;
