@@ -64,3 +64,11 @@ if(EMSCRIPTEN)
     # This line is used to set your executable to build with the emscripten html template so that you can directly open it.
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
 endif()
+
+# add assets to build
+set(RES_DIR "res")
+file(COPY "${CMAKE_SOURCE_DIR}/${RES_DIR}" DESTINATION ${CMAKE_BINARY_DIR})
+
+if(EMSCRIPTEN)
+    set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "--preload-file ${RES_DIR}")
+endif()

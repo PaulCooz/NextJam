@@ -15,7 +15,7 @@ int main() {
     {
       ClearBackground(ColorC);
 
-      auto node = VisualNode::FromFile("res/test.xml");
+      auto node = VisualNode::FromFile("res/ui.xml");
       node->RenderTree();
 
       Vector2 deltaMove;
