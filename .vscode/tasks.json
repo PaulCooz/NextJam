@@ -1,0 +1,79 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "configure",
+			"command": "cmake",
+			"args": [
+				"-S",
+				".",
+				"-B",
+				"./build",
+				"-DCMAKE_BUILD_TYPE=Debug",
+				"-G",
+				"Ninja"
+			]
+		},
+		{
+			"label": "build",
+			"command": "cmake",
+			"args": [
+				"--build",
+				"./build"
+			],
+			"dependsOn": [
+				"configure"
+			],
+			"group": "build"
+		},
+		{
+			"label": "build and run",
+			"command": "./build/NextJam.exe",
+			"dependsOn": [
+				"build"
+			],
+			"group": "build"
+		},
+		{
+			"type": "shell",
+			"label": "web configure",
+			"command": "emcmake",
+			"args": [
+				"cmake",
+				"-S",
+				".",
+				"-B",
+				"./build/web",
+				"-DCMAKE_BUILD_TYPE=Debug",
+				"-DPLATFORM=Web",
+				"-G",
+				"Ninja"
+			]
+		},
+		{
+			"label": "web build",
+			"command": "cmake",
+			"args": [
+				"--build",
+				"./build/web"
+			],
+			"dependsOn": [
+				"web configure"
+			],
+			"group": "build"
+		},
+		{
+			"type": "shell",
+			"label": "web build and run",
+			"command": "emrun",
+			"args": [
+				"./build/web/NextJam.html"
+			],
+			"dependsOn": [
+				"web build"
+			],
+			"group": "build"
+		},
+	]
+}
