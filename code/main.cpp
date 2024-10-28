@@ -1,8 +1,8 @@
-#include "colors.h"
-#include "raylib.h"
+#include "settings.h"
+#include "visual_node.h"
 #include "vmath.h"
+#include <raylib.h>
 #include <stdio.h>
-#include <visual_node.h>
 
 int main() {
   SetTraceLogLevel(LOG_WARNING);
@@ -13,7 +13,7 @@ int main() {
   while (!WindowShouldClose()) {
     BeginDrawing();
     {
-      ClearBackground(ColorC);
+      ClearBackground(ClrBack);
 
       auto node = VisualNode::FromFile("res/ui.xml");
       node->RenderTree();

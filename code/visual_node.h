@@ -1,6 +1,9 @@
-#include "raylib.h"
+#pragma once
+
+#include "vmath.h"
 #include <iostream>
 #include <pugixml.hpp>
+#include <raylib.h>
 #include <string>
 #include <yoga/Yoga.h>
 
@@ -61,17 +64,7 @@ public:
       } else if (name == "gap") {
         YGNodeStyleSetGap(child->node, YGGutterAll, attribute.as_float());
       } else if (name == "color") {
-        std::string str = attribute.as_string();
-
-        child->color.r = std::stoi(str.substr(1, 2), 0, 16);
-        child->color.g = std::stoi(str.substr(3, 2), 0, 16);
-        child->color.b = std::stoi(str.substr(5, 2), 0, 16);
-
-        if (str.length() == 9) {
-          child->color.a = std::stoi(str.substr(7, 2), 0, 16);
-        } else {
-          child->color.a = 255;
-        }
+        child->color = HexToRgb(attribute.as_string());
       } else if (name == "align-content") {
         std::string align = attribute.as_string();
         YGAlign value;

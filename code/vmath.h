@@ -4,6 +4,22 @@
 #include <algorithm>
 #include <math.h>
 
+static Color HexToRgb(std::string str) {
+  Color color;
+
+  color.r = std::stoi(str.substr(1, 2), 0, 16);
+  color.g = std::stoi(str.substr(3, 2), 0, 16);
+  color.b = std::stoi(str.substr(5, 2), 0, 16);
+
+  if (str.length() == 9) {
+    color.a = std::stoi(str.substr(7, 2), 0, 16);
+  } else {
+    color.a = 255;
+  }
+
+  return color;
+}
+
 float Length(Vector2 vec) { return sqrt(vec.x * vec.x + vec.y * vec.y); }
 
 Vector2 Mult(const Vector2& vec, float scale) {
