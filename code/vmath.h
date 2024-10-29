@@ -5,6 +5,17 @@
 #include <math.h>
 #include <string>
 
+static std::string Trim(std::string s) {
+  int i = 0;
+  while (i < s.size() && (s[i] == ' ' || s[i] == '\n'))
+    i++;
+
+  int j = s.size() - 1;
+  while (0 <= j && (s[j] == ' ' || s[j] == '\n'))
+    j--;
+  return s.substr(i, j - i + 1);
+}
+
 static Color HexToRgb(std::string str) {
   Color color;
 

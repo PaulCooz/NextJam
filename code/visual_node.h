@@ -48,17 +48,25 @@ public:
     YGNodeFree(root);
   }
 
-  void RenderTreeFrom(YGNodeRef root) {
-    auto top = YGNodeLayoutGetTop(root);
-    auto left = YGNodeLayoutGetLeft(root);
-    auto width = YGNodeLayoutGetWidth(root);
-    auto height = YGNodeLayoutGetHeight(root);
+  float GetTop() { return YGNodeLayoutGetTop(node); }
+  float GetLeft() { return YGNodeLayoutGetLeft(node); }
+  float GetWidth() { return YGNodeLayoutGetWidth(node); }
+  float GetHeight() { return YGNodeLayoutGetHeight(node); }
 
+  void RenderTreeFrom(YGNodeRef root) {
     auto visual = (VisualNode*)YGNodeGetContext(root);
+
+    auto top = visual->GetTop();
+    auto left = visual->GetLeft();
+    auto width = visual->GetWidth();
+    auto height = visual->GetHeight();
+
     DrawRectangle(left, top, width, height, visual->color);
 
     if (visual->text != "") {
-      DrawTextEx(font, visual->text.c_str(), Vector2{left, top}, visual->fontSize, 0, Color{0, 0, 0, 255});
+      auto text = visual->text.c_str();
+      auto fontSize = visual->fontSize;
+      DrawTextEx(font, text, Vector2{left, top}, fontSize, 0, Color{0, 0, 0, 255});
     }
 
     for (size_t i = 0; i < YGNodeGetChildCount(root); i++) {
@@ -87,10 +95,8 @@ public:
     return nullptr;
   }
 
-  static void InsertTree(YGNodeRef root, pugi::xml_node xml_child) {
+  static VisualNode* ParseNode(pugi::xml_node xml_child) {
     auto child = new VisualNode();
-
-    YGNodeInsertChild(root, child->node, YGNodeGetChildCount(root));
 
     for (auto attribute : xml_child.attributes()) {
       std::string name = attribute.name();
@@ -171,15 +177,39 @@ public:
         YGNodeStyleSetFlexDirection(child->node, value);
       } else if (name == "name") {
         child->name = attribute.as_string();
-      } else if (name == "text") {
-        child->text = attribute.as_string();
-      } else if (name == "font-size") {
+      }
+    }
+
+    return child;
+  }
+
+  static VisualNode* ParseText(pugi::xml_node xml_child) {
+    auto child = ParseNode(xml_child);
+    for (auto attribute : xml_child.attributes()) {
+      std::string name = attribute.name();
+      if (name == "font-size") {
         child->fontSize = attribute.as_int();
       }
     }
 
-    for (auto subChild : xml_child.children()) {
-      InsertTree(child->node, subChild);
+    child->text = Trim(xml_child.text().as_string());
+
+    return child;
+  }
+
+  static void InsertTree(YGNodeRef root, pugi::xml_node xml_child) {
+    std::string type = xml_child.name();
+    if (type == "Node") {
+      auto child = ParseNode(xml_child);
+
+      YGNodeInsertChild(root, child->node, YGNodeGetChildCount(root));
+
+      for (auto subChild : xml_child.children()) {
+        InsertTree(child->node, subChild);
+      }
+    } else if (type == "Text") {
+      auto child = ParseText(xml_child);
+      YGNodeInsertChild(root, child->node, YGNodeGetChildCount(root));
     }
   }
 
