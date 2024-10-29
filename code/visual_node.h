@@ -29,33 +29,42 @@ public:
     fontSize = 0;
   }
 
-  ~VisualNode() {
-    const auto root = node;
-
-    size_t skipped = 0;
-    while (YGNodeGetChildCount(root) > skipped) {
-      const auto child = YGNodeGetChild(root, skipped);
-      auto weOwn = YGNodeGetOwner(child) == root;
-      if (weOwn) {
-        YGNodeRemoveChild(root, child);
-
-        auto context = (VisualNode*)YGNodeGetContext(child);
-        delete context;
-      } else {
-        skipped++;
-      }
-    }
-    YGNodeFree(root);
-  }
-
   float GetTop() { return YGNodeLayoutGetTop(node); }
   float GetLeft() { return YGNodeLayoutGetLeft(node); }
   float GetWidth() { return YGNodeLayoutGetWidth(node); }
   float GetHeight() { return YGNodeLayoutGetHeight(node); }
 
-  void RenderTreeFrom(YGNodeRef root) {
-    auto visual = (VisualNode*)YGNodeGetContext(root);
+  size_t GetChildCount() { return YGNodeGetChildCount(node); }
+  VisualNode* GetChild(const size_t index) {
+    auto child = YGNodeGetChild(node, index);
+    return (VisualNode*)YGNodeGetContext(child);
+  }
 
+  void InsertChild(VisualNode* child, size_t index) { YGNodeInsertChild(node, child->node, index); }
+  void RemoveChild(VisualNode* child) { YGNodeRemoveChild(node, child->node); }
+
+  VisualNode* GetOwner() {
+    auto owner = YGNodeGetOwner(node);
+    return (VisualNode*)YGNodeGetContext(owner);
+  }
+
+  ~VisualNode() {
+    size_t skipped = 0;
+    while (GetChildCount() > skipped) {
+      const auto child = GetChild(skipped);
+      auto weOwn = child->GetOwner() == this;
+      if (weOwn) {
+        RemoveChild(child);
+
+        delete child;
+      } else {
+        skipped++;
+      }
+    }
+    YGNodeFree(node);
+  }
+
+  void RenderTreeFrom(VisualNode* visual) {
     auto top = visual->GetTop();
     auto left = visual->GetLeft();
     auto width = visual->GetWidth();
@@ -69,25 +78,23 @@ public:
       DrawTextEx(font, text, Vector2{left, top}, fontSize, 0, Color{0, 0, 0, 255});
     }
 
-    for (size_t i = 0; i < YGNodeGetChildCount(root); i++) {
-      auto child = YGNodeGetChild(root, i);
+    for (size_t i = 0; i < visual->GetChildCount(); i++) {
+      auto child = visual->GetChild(i);
       RenderTreeFrom(child);
     }
   }
 
   void RenderTree(float width, float height) {
     YGNodeCalculateLayout(node, width, height, YGDirectionLTR);
-    RenderTreeFrom(node);
+    RenderTreeFrom(this);
   }
 
   VisualNode* FindByName(const std::string& n) {
     if (name == n)
       return this;
 
-    for (size_t i = 0; i < YGNodeGetChildCount(node); i++) {
-      auto child = YGNodeGetChild(node, i);
-      auto context = (VisualNode*)YGNodeGetContext(child);
-      auto subFind = context->FindByName(n);
+    for (size_t i = 0; i < GetChildCount(); i++) {
+      auto subFind = GetChild(i)->FindByName(n);
       if (subFind != nullptr)
         return subFind;
     }
@@ -197,26 +204,26 @@ public:
     return child;
   }
 
-  static void InsertTree(YGNodeRef root, pugi::xml_node xml_child) {
+  static void InsertTree(VisualNode* root, pugi::xml_node xml_child) {
     std::string type = xml_child.name();
     if (type == "Node") {
       auto child = ParseNode(xml_child);
 
-      YGNodeInsertChild(root, child->node, YGNodeGetChildCount(root));
+      root->InsertChild(child, root->GetChildCount());
 
       for (auto subChild : xml_child.children()) {
-        InsertTree(child->node, subChild);
+        InsertTree(child, subChild);
       }
     } else if (type == "Text") {
       auto child = ParseText(xml_child);
-      YGNodeInsertChild(root, child->node, YGNodeGetChildCount(root));
+      root->InsertChild(child, root->GetChildCount());
     }
   }
 
   static VisualNode* FromXml(const pugi::xml_document& doc) {
     auto root = new VisualNode();
     for (auto child : doc) {
-      InsertTree(root->node, child);
+      InsertTree(root, child);
     }
     return root;
   }
