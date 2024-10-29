@@ -12,6 +12,7 @@ class VisualNode {
 private:
   YGNodeRef node;
   std::string name;
+  void (*render_func)(VisualNode* visual);
 
 public:
   Color color;
@@ -27,6 +28,7 @@ public:
     name = "";
     text = "";
     fontSize = 0;
+    render_func = nullptr;
   }
 
   float GetTop() { return YGNodeLayoutGetTop(node); }
@@ -64,29 +66,19 @@ public:
     YGNodeFree(node);
   }
 
-  void RenderTreeFrom(VisualNode* visual) {
-    auto top = visual->GetTop();
-    auto left = visual->GetLeft();
-    auto width = visual->GetWidth();
-    auto height = visual->GetHeight();
+  void Render() {
+    if (render_func != nullptr)
+      render_func(this);
 
-    DrawRectangle(left, top, width, height, visual->color);
-
-    if (visual->text != "") {
-      auto text = visual->text.c_str();
-      auto fontSize = visual->fontSize;
-      DrawTextEx(font, text, Vector2{left, top}, fontSize, 0, Color{0, 0, 0, 255});
-    }
-
-    for (size_t i = 0; i < visual->GetChildCount(); i++) {
-      auto child = visual->GetChild(i);
-      RenderTreeFrom(child);
+    for (size_t i = 0; i < GetChildCount(); i++) {
+      auto child = GetChild(i);
+      child->Render();
     }
   }
 
   void RenderTree(float width, float height) {
     YGNodeCalculateLayout(node, width, height, YGDirectionLTR);
-    RenderTreeFrom(this);
+    Render();
   }
 
   VisualNode* FindByName(const std::string& n) {
@@ -100,6 +92,24 @@ public:
     }
 
     return nullptr;
+  }
+
+  static void RenderNodeType(VisualNode* visual) {
+    auto top = visual->GetTop();
+    auto left = visual->GetLeft();
+    auto width = visual->GetWidth();
+    auto height = visual->GetHeight();
+
+    DrawRectangle(left, top, width, height, visual->color);
+  }
+
+  static void RenderTextType(VisualNode* visual) {
+    auto top = visual->GetTop();
+    auto left = visual->GetLeft();
+    auto text = visual->text.c_str();
+    auto fontSize = visual->fontSize;
+
+    DrawTextEx(font, text, Vector2{left, top}, fontSize, 0, visual->color);
   }
 
   static VisualNode* ParseNode(pugi::xml_node xml_child) {
@@ -208,6 +218,7 @@ public:
     std::string type = xml_child.name();
     if (type == "Node") {
       auto child = ParseNode(xml_child);
+      child->render_func = RenderNodeType;
 
       root->InsertChild(child, root->GetChildCount());
 
@@ -216,6 +227,8 @@ public:
       }
     } else if (type == "Text") {
       auto child = ParseText(xml_child);
+      child->render_func = RenderTextType;
+
       root->InsertChild(child, root->GetChildCount());
     }
   }

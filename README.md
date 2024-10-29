@@ -12,7 +12,9 @@ As example for web:
 - cmake --build ./build/web
 - emrun ./build/web/NextJam.html
 
-But in VSCode use ```Ctrl-Shift-P``` -> ```Tasks: Run Build Task``` -> ```web build and run```
+But in VSCode use:
+- CMake extension (as best)
+- ```Ctrl-Shift-P``` -> ```Tasks: Run Build Task``` -> ```web build and run``` (as generic)
 
 # Links
 
