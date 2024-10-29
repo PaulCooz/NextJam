@@ -10,6 +10,8 @@ int main() {
 
   SetTargetFPS(60);
 
+  font = LoadFont("res/monogram-extended.ttf");
+
   auto tree = VisualNode::FromFile("res/ui.xml");
   while (!WindowShouldClose()) {
     BeginDrawing();

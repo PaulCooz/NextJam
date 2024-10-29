@@ -11,3 +11,5 @@ const static Color ClrE = HexToRgb("#a597a1");
 const static Color ClrBack = HexToRgb("#8fa0bf");
 const static Color ClrG = HexToRgb("#9aabc9");
 const static Color ClrH = HexToRgb("#a5b7d4");
+
+static Font font;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "settings.h"
 #include "vmath.h"
 #include <iostream>
 #include <pugixml.hpp>
@@ -15,12 +16,17 @@ private:
 public:
   Color color;
 
+  std::string text;
+  int fontSize;
+
   VisualNode() {
     node = YGNodeNew();
     YGNodeSetContext(node, this);
 
     color.r = color.g = color.b = color.a = 0;
     name = "";
+    text = "";
+    fontSize = 0;
   }
 
   ~VisualNode() {
@@ -50,6 +56,10 @@ public:
 
     auto visual = (VisualNode*)YGNodeGetContext(root);
     DrawRectangle(left, top, width, height, visual->color);
+
+    if (visual->text != "") {
+      DrawTextEx(font, visual->text.c_str(), Vector2{left, top}, visual->fontSize, 0, Color{0, 0, 0, 255});
+    }
 
     for (size_t i = 0; i < YGNodeGetChildCount(root); i++) {
       auto child = YGNodeGetChild(root, i);
@@ -161,6 +171,10 @@ public:
         YGNodeStyleSetFlexDirection(child->node, value);
       } else if (name == "name") {
         child->name = attribute.as_string();
+      } else if (name == "text") {
+        child->text = attribute.as_string();
+      } else if (name == "font-size") {
+        child->fontSize = attribute.as_int();
       }
     }
 

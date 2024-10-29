@@ -3,6 +3,6 @@
         <Node flex-grow="0.6" color="#fcb08c" name="grid"> </Node>
         <Node flex-grow="0.4" color="#fcb08c" />
     </Node>
-    <Node flex-grow="0.3" padding="10">
+    <Node flex-grow="0.3" padding="10" text="This is text" font-size="40">
     </Node>
 </Node>
