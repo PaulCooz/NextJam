@@ -1,3 +1,4 @@
+#include "level.h"
 #include "settings.h"
 #include "visual_node.h"
 #include "vmath.h"
@@ -6,21 +7,30 @@
 
 int main() {
   SetTraceLogLevel(LOG_WARNING);
-  InitWindow(610, 987, "Next Jam");
-
-  SetTargetFPS(60);
+  SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI | FLAG_WINDOW_RESIZABLE);
+  InitWindow(377, 610, "Next Jam");
 
   font = LoadFont("res/monogram-extended.ttf");
 
   auto tree = VisualNode::FromFile("res/ui.xml");
+
+  auto gridNode = tree->FindByName("grid");
+
+  auto visual = VisualNode::FromFile("res/grid_block.xml");
+  visual->color = ClrC;
+  gridNode->AddChild(visual);
+
+  visual = VisualNode::FromFile("res/grid_block.xml");
+  visual->color = ClrE;
+  gridNode->AddChild(visual);
+
+  auto level = new Level();
   while (!WindowShouldClose()) {
     BeginDrawing();
     {
       ClearBackground(ClrBack);
 
-      auto gridNode = tree->FindByName("grid");
-      gridNode->color.r = (unsigned char)((gridNode->color.r + 1) % 256);
-      tree->RenderTree(GetRenderWidth(), GetRenderHeight());
+      tree->RenderTree(GetScreenWidth(), GetScreenHeight());
 
       Vector2 deltaMove;
       deltaMove.x = deltaMove.y = 0;

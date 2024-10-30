@@ -43,6 +43,7 @@ public:
   }
 
   void InsertChild(VisualNode* child, size_t index) { YGNodeInsertChild(node, child->node, index); }
+  void AddChild(VisualNode* child) { YGNodeInsertChild(node, child->node, GetChildCount()); }
   void RemoveChild(VisualNode* child) { YGNodeRemoveChild(node, child->node); }
 
   VisualNode* GetOwner() {
@@ -50,7 +51,7 @@ public:
     return (VisualNode*)YGNodeGetContext(owner);
   }
 
-  ~VisualNode() {
+  void RemoveAllChildren() {
     size_t skipped = 0;
     while (GetChildCount() > skipped) {
       const auto child = GetChild(skipped);
@@ -63,6 +64,10 @@ public:
         skipped++;
       }
     }
+  }
+
+  ~VisualNode() {
+    RemoveAllChildren();
     YGNodeFree(node);
   }
 
@@ -121,6 +126,8 @@ public:
         std::string value = attribute.as_string();
         if (value.back() == '%') {
           YGNodeStyleSetWidthPercent(child->node, std::stoi(value.substr(0, value.size() - 1)));
+        } else if (value == "auto") {
+          YGNodeStyleSetWidthAuto(child->node);
         } else {
           YGNodeStyleSetWidth(child->node, attribute.as_float());
         }
@@ -128,6 +135,8 @@ public:
         std::string value = attribute.as_string();
         if (value.back() == '%') {
           YGNodeStyleSetHeightPercent(child->node, std::stoi(value.substr(0, value.size() - 1)));
+        } else if (value == "auto") {
+          YGNodeStyleSetHeightAuto(child->node);
         } else {
           YGNodeStyleSetHeight(child->node, attribute.as_float());
         }
@@ -165,6 +174,54 @@ public:
         }
 
         YGNodeStyleSetAlignContent(child->node, value);
+      } else if (name == "align-items") {
+        std::string align = attribute.as_string();
+        YGAlign value;
+        if (align == "auto") {
+          value = YGAlignAuto;
+        } else if (align == "flex-start") {
+          value = YGAlignFlexStart;
+        } else if (align == "flex-end") {
+          value = YGAlignFlexEnd;
+        } else if (align == "center") {
+          value = YGAlignCenter;
+        } else if (align == "stretch") {
+          value = YGAlignStretch;
+        } else if (align == "baseline") {
+          value = YGAlignBaseline;
+        } else if (align == "space-between") {
+          value = YGAlignSpaceBetween;
+        } else if (align == "space-around") {
+          value = YGAlignSpaceAround;
+        } else if (align == "space-evenly") {
+          value = YGAlignSpaceEvenly;
+        }
+
+        YGNodeStyleSetAlignItems(child->node, value);
+      } else if (name == "align-self") {
+        std::string align = attribute.as_string();
+        YGAlign value;
+        if (align == "auto") {
+          value = YGAlignAuto;
+        } else if (align == "flex-start") {
+          value = YGAlignFlexStart;
+        } else if (align == "flex-end") {
+          value = YGAlignFlexEnd;
+        } else if (align == "center") {
+          value = YGAlignCenter;
+        } else if (align == "stretch") {
+          value = YGAlignStretch;
+        } else if (align == "baseline") {
+          value = YGAlignBaseline;
+        } else if (align == "space-between") {
+          value = YGAlignSpaceBetween;
+        } else if (align == "space-around") {
+          value = YGAlignSpaceAround;
+        } else if (align == "space-evenly") {
+          value = YGAlignSpaceEvenly;
+        }
+
+        YGNodeStyleSetAlignSelf(child->node, value);
       } else if (name == "flex-wrap") {
         std::string wrap = attribute.as_string();
         YGWrap value;
@@ -220,7 +277,7 @@ public:
       auto child = ParseNode(xml_child);
       child->render_func = RenderNodeType;
 
-      root->InsertChild(child, root->GetChildCount());
+      root->AddChild(child);
 
       for (auto subChild : xml_child.children()) {
         InsertTree(child, subChild);
@@ -229,15 +286,27 @@ public:
       auto child = ParseText(xml_child);
       child->render_func = RenderTextType;
 
-      root->InsertChild(child, root->GetChildCount());
+      root->AddChild(child);
     }
   }
 
   static VisualNode* FromXml(const pugi::xml_document& doc) {
-    auto root = new VisualNode();
-    for (auto child : doc) {
-      InsertTree(root, child);
+    VisualNode* root;
+
+    pugi::xml_node xml_child = *doc.children().begin();
+    std::string type = xml_child.name();
+    if (type == "Node") {
+      root = ParseNode(xml_child);
+      root->render_func = RenderNodeType;
+
+      for (auto subChild : xml_child.children()) {
+        InsertTree(root, subChild);
+      }
+    } else if (type == "Text") {
+      root = ParseText(xml_child);
+      root->render_func = RenderTextType;
     }
+
     return root;
   }
 
