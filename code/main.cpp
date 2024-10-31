@@ -1,7 +1,7 @@
 #include "level.h"
 #include "settings.h"
-#include "visual_node.h"
 #include "vmath.h"
+#include <algorithm>
 #include <raylib.h>
 #include <stdio.h>
 
@@ -12,25 +12,73 @@ int main() {
 
   font = LoadFont("res/monogram-extended.ttf");
 
-  auto tree = VisualNode::FromFile("res/ui.xml");
-
-  auto gridNode = tree->FindByName("grid");
-
-  auto visual = VisualNode::FromFile("res/grid_block.xml");
-  visual->color = ClrC;
-  gridNode->AddChild(visual);
-
-  visual = VisualNode::FromFile("res/grid_block.xml");
-  visual->color = ClrE;
-  gridNode->AddChild(visual);
-
   auto level = new Level();
+  level->width = 10;
+  level->height = 10;
+
+  struct VisualRect {
+    Rectangle rect;
+    Color color;
+  };
+  VisualRect grid[10][10];
+  VisualRect steps[3];
+
   while (!WindowShouldClose()) {
     BeginDrawing();
     {
       ClearBackground(ClrBack);
 
-      tree->RenderTree(GetScreenWidth(), GetScreenHeight());
+      float screenWidth = GetScreenWidth(), screenHeight = GetScreenHeight();
+
+      {
+        float w = screenWidth * 0.6, h = screenHeight * 0.7;
+        float x = 0, y = 0;
+        DrawRectangle(x, y, w, h, ClrA);
+        int gap = 3;
+        int itemWidth = (w - gap * (level->width + 1.0)) / (float)level->width,
+            itemHeight = (h - gap * (level->height + 1.0)) / (float)level->height;
+        for (int i = 0; i < level->height; i++) {
+          for (int j = 0; j < level->width; j++) {
+            float posX = x + itemWidth * i + gap * (i + 1);
+            float posY = y + itemHeight * j + gap * (j + 1);
+            grid[i][j].rect.x = posX;
+            grid[i][j].rect.y = posY;
+            grid[i][j].rect.width = itemWidth;
+            grid[i][j].rect.height = itemHeight;
+            grid[i][j].color = ClrC;
+          }
+        }
+
+        for (int i = 0; i < level->height; i++) {
+          for (int j = 0; j < level->width; j++) {
+            auto item = grid[i][j];
+            DrawRectangle(item.rect.x, item.rect.y, item.rect.width, item.rect.height, item.color);
+          }
+        }
+      }
+
+      {
+        float w = screenWidth * 0.4, h = screenHeight * 0.7;
+        float x = screenWidth * 0.6, y = 0;
+        DrawRectangle(x, y, w, h, ClrC);
+
+        int gap = 3;
+        int itemWidth = (w - gap * (1 + 1.0)) / (float)1, itemHeight = (h - gap * (3 + 1.0)) / (float)3;
+        for (int j = 0; j < 3; j++) {
+          steps[j].rect.x = x + itemWidth * 0 + gap * (0 + 1);
+          steps[j].rect.y = y + itemHeight * j + gap * (j + 1);
+          steps[j].rect.width = itemWidth;
+          steps[j].rect.height = itemHeight;
+          steps[j].color = {.r = 100, .g = (unsigned char)(0 * 10), .b = (unsigned char)(j * 10), .a = 255};
+        }
+
+        for (int j = 0; j < 3; j++) {
+          auto item = steps[j];
+          DrawRectangle(item.rect.x, item.rect.y, item.rect.width, item.rect.height, item.color);
+        }
+      }
+
+      { DrawRectangle(0, screenHeight * 0.7, screenWidth, screenHeight * 0.3, ClrB); }
 
       Vector2 deltaMove;
       deltaMove.x = deltaMove.y = 0;
@@ -55,7 +103,7 @@ int main() {
     }
     EndDrawing();
   }
-  delete tree;
+  delete level;
 
   CloseWindow();
 

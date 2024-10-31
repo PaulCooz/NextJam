@@ -21,28 +21,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(raylib)
 
-FetchContent_Declare(
-    yogacore
-    GIT_REPOSITORY "https://github.com/facebook/yoga.git"
-    GIT_TAG "v3.1.0"
-    GIT_PROGRESS TRUE
-    SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/yogacore
-)
-
-if(NOT yogacore_POPULATED)
-    FetchContent_Populate(yogacore)
-    add_subdirectory(${yogacore_SOURCE_DIR}/yoga ${yogacore_BINARY_DIR})
-endif()
-
-FetchContent_Declare(
-    pugixml
-    GIT_REPOSITORY "https://github.com/zeux/pugixml.git"
-    GIT_TAG "v1.14"
-    GIT_PROGRESS TRUE
-    SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/pugixml
-)
-FetchContent_MakeAvailable(pugixml)
-
 # Adding our source files
 # Define PROJECT_SOURCES as a list of all source files
 file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/code/*.cpp")
@@ -55,8 +33,6 @@ add_executable(${PROJECT_NAME})
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
-target_link_libraries(${PROJECT_NAME} PRIVATE yogacore)
-target_link_libraries(${PROJECT_NAME} PRIVATE pugixml)
 
 if(EMSCRIPTEN)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s USE_GLFW=3 -s ASSERTIONS=1 -s WASM=1 -s ASYNCIFY -s GL_ENABLE_GET_PROC_ADDRESS=1")
